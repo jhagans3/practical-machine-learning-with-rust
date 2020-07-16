@@ -1,5 +1,5 @@
 [package]
-name = "rustymachine-regression"
+name = "supervised-learning"
 version = "0.1.0"
 authors = ["James Hagans <jhagans@acm.org>"]
 edition = "2018"
