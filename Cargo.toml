@@ -1,6 +1,7 @@
 [workspace]
 
 members = [ 
+    "plot",
     "supervised-learning",
     "working-with-data",
 ]
