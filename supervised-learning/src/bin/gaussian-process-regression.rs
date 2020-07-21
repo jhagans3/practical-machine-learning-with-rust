@@ -2,7 +2,9 @@ use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rusty_machine;
 use rusty_machine::analysis::score::neg_mean_squared_error;
-use rusty_machine::learning::lin_reg::LinRegressor;
+use rusty_machine::learning::gp::ConstMean;
+use rusty_machine::learning::gp::GaussianProcess;
+use rusty_machine::learning::toolkit::kernel;
 use rusty_machine::learning::SupModel;
 use rusty_machine::linalg::Matrix;
 use rusty_machine::linalg::Vector;
@@ -155,23 +157,29 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     let boston_x_train = Matrix::new(train_size, 13, boston_x_train);
     let boston_y_train = Vector::new(boston_y_train);
     let boston_x_test = Matrix::new(test_size, 13, boston_x_test);
-    // let boston_y_test = Vector::new(boston_y_test);
     let boston_y_test = Matrix::new(test_size, 1, boston_y_test);
 
-    // Create a linear regression model
-    let mut lin_model = LinRegressor::default();
-    println!("{:?}", lin_model);
+    // A moderate noise level can be helpful for dealing with numeric
+    // issues when fitting as it is effectively implemented as Tikhonov
+    // regularization, that is, by adding it to the diagonal of the kernel matrix.
+    // Create a gaussian process regression
+    // A squared exponential kernel with lengthscale 2 and amplitude 1
+    let ker = kernel::SquaredExp::new(2., 1.);
 
-    // Train the model
-    lin_model.train(&boston_x_train, &boston_y_train);
+    // zero function as mean function
+    let zero_mean = ConstMean::default();
 
-    // Now we will predict
-    let predictions = lin_model.predict(&boston_x_test).unwrap();
+    // defining the model with noise 10
+    let mut gaus_model = GaussianProcess::new(ker, zero_mean, 10f64);
+
+    gaus_model.train(&boston_x_train, &boston_y_train)?;
+
+    let predictions = gaus_model.predict(&boston_x_test).unwrap();
     let predictions = Matrix::new(test_size, 1, predictions);
     let acc = neg_mean_squared_error(&predictions, &boston_y_test);
-    println!("linear regression error: {:?}", acc);
+    println!("gaussian process regression error: {:?}", acc);
     println!(
-        "linear regression R2 score: {:?}",
+        "gaussian process regression R2 score: {:?}",
         r_squared_score(&boston_y_test.data(), &predictions.data())
     );
 
@@ -179,7 +187,7 @@ pub fn run() -> Result<(), Box<dyn Error>> {
 }
 
 // ../practical-machine-learning-with-rust/supervised-learning/data/housing.csv
-// ../practical-machine-learning-with-rust/supervised-learning$ cargo run --bin rustymachine-regression
+// ../practical-machine-learning-with-rust/supervised-learning$ cargo run --bin gaussian-process-regression
 fn main() -> Result<(), Box<dyn Error>> {
     run()?;
 

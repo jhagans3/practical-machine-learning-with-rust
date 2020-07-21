@@ -243,7 +243,8 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-// cargo run --bin tf-regression
+// ../practical-machine-learning-with-rust/supervised-learning/data/housing.csv
+// ../practical-machine-learning-with-rust/supervised-learning$ cargo run --bin tf-regression
 fn main() -> Result<(), Box<dyn Error>> {
     run()?;
 
