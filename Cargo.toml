@@ -4,4 +4,5 @@ members = [
     "plot",
     "supervised-learning",
     "working-with-data",
+    "statistics",
 ]
